@@ -252,23 +252,44 @@ You'll need to perform this mounting process for each lab, creating and
 mounting another directory each time (i.e. mounting `lab2_ws/src` for Lab 2,
 mounting `lab2_ws/src` for Lab 3, and so on...)
 
-`tmux` is recommended when you're working inside a container. It could
-be installed in the container via: `apt update && apt install
-tmux`. `tmux` allows you to have multiple `bash` session in the same
-terminal window. This will be very convenient working inside
-containers. A quick reference on how to use tmux can be found
-[here](https://www.redhat.com/sysadmin/introduction-tmux-linux). You
-can start a session with `tmux`. Then you can call different `tmux`
-commands by pressing `ctrl+B` first and then the corresponding
-key. For example, to add a new window, press `ctrl+B` first and
-release and press `c` to create a new window. You can also move around
-with `ctrl+B` then `n` or `p`. 
+## An Aside: `tmux`
 
-A cheatsheet for the original tmux shortcut keys can be found
-[here](https://tmuxcheatsheet.com/). To know about how to change the
-configuration of tmux to make it more useable (for example, if you
-want to toggle the mouse mode on when you start a tmux bash session or
-change the shortcut keys), you can find a tutorial
+`tmux` is a command-line utility which allows you to run multiple subterminals
+within the same terminal. Additionally, you can run a `tmux` session and
+detach from it, then reattach it from a *different terminal*. This allows
+a lot of flexibility when working remotely or inside a container.
+
+You can install it (inside the container) using:
+
+```
+apt update && apt install tmux
+```
+
+However, you will need to install it every time you rebuild the container. To
+mitigate this, you can add `tmux` as a dependency to install to
+`~/sim_ws/src/f1tenth_gym_ros/Dockerfile` (see the lines where it is running
+`apt-get install`).
+
+You can start a session with:
+
+```bash
+tmux
+```
+
+Then you can call different `tmux` commands by pressing `ctrl+B` first and then
+the corresponding key. For example, to add a new window, press `ctrl+B` first
+and release and press `c` to create a new window. You can also move around
+with `ctrl+B` then `n` or `p`.
+
+References:
+
+* A quick reference on how to use tmux can be found
+[here](https://www.redhat.com/sysadmin/introduction-tmux-linux).
+* A cheatsheet for the original tmux shortcut keys can be found
+[here](https://tmuxcheatsheet.com/).
+* To know about how to change the configuration of tmux to make it more
+useable (for example, if you want to toggle the mouse mode on when you start a
+tmux bash session or change the shortcut keys), you can find a tutorial
 [here](https://www.hamvocke.com/blog/a-guide-to-customizing-your-tmux-conf/). 
 
 ## 5: ROS 2 Basics
