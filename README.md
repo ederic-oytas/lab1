@@ -161,49 +161,96 @@ browser tab should look similar to:
 	(sim-1) # 
 	```
 
-## 4. Creating a workspace and bind mounting it into the Docker container
+## 4. Volume Mounting
+
+We need to be able to sync files between our local files and our container
+files. We can do this through **mounting**. When we mount a directory or file
+onto a container, any changes made in the container will have a local effect.
+
+For example, suppose we mounted a folder called `~/my_local_dir` into my
+container as `/my_mounted_dir`, then if you create a new file in it called
+`apple.txt`, the file's contents will be the same locally and inside the
+container.
+
+| Local Directory  | Container Directory |
+| ---------------- | ------------------- |
+| `~/my_local_dir` | `/my_mounted_dir`   |
+
+For Docker, we'll use **volume mounts** to mount additional workspace folders
+to our container.
 
 1. Begin by cloning this repository into `~/lab1_ws`
 
     ```bash
 	cd ~
 	git clone https://github.com/unlv-f1/lab1 lab1_ws
-	# To get the absolute path do:
-	realpath lab1_ws
 	```
 
-2. Collect your user id and group id with the `id` command by:
+2. Then, open `~/sim_ws/src/f1tenth_gym_ros/docker-compose.yml` (this file
+    is a configuration file for our container.) Then, add the line noted in
+    the following code snippet:
+
+    ```yml
+    version: '3'
+    services:
+    sim:
+      image: f1tenth_gym_ros
+      build: ./
+      volumes: 
+      - .:/sim_ws/src/f1tenth_gym_ros
+      - ~/lab1_ws/src:/lab1_ws/src  # ADD THIS LINE
+      environment:
+      - DISPLAY=novnc:0.0
+      networks:
+      - x11
+      stdin_open: true
+      tty: true 
+    novnc:  
+      image: theasp/novnc:latest
+      environment:
+      - DISPLAY_WIDTH=1728
+      - DISPLAY_HEIGHT=972
+      ports:
+      - "8080:8080"
+      networks:
+      - x11
+    networks:
+    x11:
+    ```
+
+    This will add a new volume mount using the local directory `~/lab1_ws/src`
+    (specified before the colon) and mount onto the container as `/lab1_ws/src` 
+    (specified after the colon).
+
+3. Afterward, stop your current container using `Ctrl+C`. Then rebuild and run
+    it again:
+    
+    ```bash
+    cd ~/sim_ws/src/f1tenth_gym_ros
+    docker build -t f1tenth_gym_ros -f Dockerfile .
+    docker compose up
+    ```
+
+    Enter the container again:
 
     ```bash
-	id -u 
-	3000 # UID
-	id -g 
-	4000 # GID
-	```
+    docker exec -it f1tenth_gym_ros-sim-1 /bin/bash
+    ```
 
-3. With the docker composition 'up', enter the container bind-mounting
-   the source repository into the container:
+    Inside the container, check that it is mounted:
 
     ```bash
-	mkdir ~/lab1_ws/src
-	docker run -it -v <abspath>/lab1_ws/src:/lab1_ws/src \
-	    --name f1tenth_lab1 ros:foxy
-	```
+    cd /
+    ls
+    ```
 
-	This will bind mount a directory from the host at
-	`<abspath>/lab1_ws/src` to the path `/lab1_ws/src` while starting
-	the container. The container will be named `f1tenth_lab1`. You'll 
-	then have access to a terminal inside the container. If you wish
-	to edit files outside of the container, you will need to change
-	the permissions of the files from *inside* the container.
+    In the list of directories, you should see `lab1_ws` listed. And if you
+    use `ls lab1_ws`, you should see only `src` listed. This means it was
+    successfully mounted!
 
-    ```bash
-	cd /lab1_ws/src
-	chown -R 3000:4000 *        # UID:GID from Step 4.2
-	```
-
-    *Note*, you will need to do this for every file created from
-	within the container, every time.
+You'll need to perform this mounting process for each lab, creating and
+mounting another directory each time (i.e. mounting `lab2_ws/src` for Lab 2,
+mounting `lab2_ws/src` for Lab 3, and so on...)
 
 `tmux` is recommended when you're working inside a container. It could
 be installed in the container via: `apt update && apt install
